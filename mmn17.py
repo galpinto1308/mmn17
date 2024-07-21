@@ -10,18 +10,19 @@ import os
 camera_angle_x = 0.0
 camera_angle_y = 0.0
 camera_distance = 6.0
-
+head_angle = 0
+move_flag = 0
 # myRespahe function to be called when the user resize the window
 def myReshape(width, height):
     if height == 0:
         height = 1  # Prevent divide by zero
-    aspect = width / height
+    aspect = float(width) / float(height)
 
     glViewport(0, 0, width, height)
 
     glMatrixMode(GL_PROJECTION)  # To operate on the Projection matrix
     glLoadIdentity()  # Reset the projection matrix
-    gluPerspective(45.0, aspect, 0.1, 100.0)
+    gluPerspective(45.0, aspect, 1, 100.0)
 
     glMatrixMode(GL_MODELVIEW)  # To operate on the model-view matrix
     glLoadIdentity()  # Reset the model-view matrix
@@ -158,23 +159,25 @@ def draw_body():
 
 def draw_head_features():
     # Draw eyes, nose, mouth relative to the cube's transformations
-    # Eyes
-    # Apply scaling to make the cube a rectangular cuboid
-    glScalef(2.0, 1.0, 1.0)  # Scale x by 2, y and z remain the same
+
+    glRotate(head_angle,0,1,0)
+    glScalef(2.0, 1.0, 1.0)
     glColor3f(1.0, 0.0, 0.0)
-    # Draw the solid cube
+    # head
     glutSolidCube(0.5)
-    glEnable(GL_BLEND)  # Enable blending, which is required for smoothing
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)  # Set blend function
-    glEnable(GL_LINE_SMOOTH)  # Enable line smoothing
-    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)  # Optional: ask for the nicest line smoothing
-    glLineWidth(1.5)  # Optional: set line width to make it slightly thicker
+    glEnable(GL_BLEND)
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+    glEnable(GL_LINE_SMOOTH)
+    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
+    glColor3f(0, 0, 0)
+    glLineWidth(1.5)
     glutWireCube(0.5)
 
-    glColor3f(0, 0, 0)  # Black color for the eyes
+    # eyes
+    glColor3f(0, 0, 0)
     glPushMatrix()
-    glTranslatef(-0.1, 0.12, 0.26)  # Adjust the position so it is relative to cube size
-    glutSolidSphere(0.05, 32, 32)  # Use solid spheres for 3D eyes
+    glTranslatef(-0.1, 0.12, 0.26)
+    glutSolidSphere(0.05, 32, 32)
     glPopMatrix()
 
     glPushMatrix()
@@ -192,11 +195,11 @@ def draw_head_features():
     glEnd()
     glPopMatrix()
 
-    # Mouth - Adjust the position and dimensions to ensure it's centered on the scaled cuboid
-    glPushMatrix()  # Apply the same scale as the cube to ensure correct positioning
-    glScalef(2.0, 1.0, 1.0)  # Match scaling to the cube's scaling
+    # Mouth
+    glPushMatrix()
+    glScalef(2.0, 1.0, 1.0)
     glBegin(GL_QUADS)
-    glVertex3f(-0.075 / 2, -0.1, 0.26)  # Adjust the x-coordinates to compensate for scaling
+    glVertex3f(-0.075 / 2, -0.1, 0.26)
     glVertex3f(0.075 / 2, -0.1, 0.26)
     glVertex3f(0.075 / 2, -0.15, 0.26)
     glVertex3f(-0.075 / 2, -0.15, 0.26)
@@ -206,8 +209,13 @@ def draw_head_features():
 
 def draw_robot():
     glPushMatrix()
-    glColor3f(1.0, 0.0, 0.0)  # Red color
+    glColor3f(1.0, 0.0, 0.0)
 
+    # placing of the robot in the scene
+    glTranslatef(-1, 0, -1)
+    glScalef(0.5, 0.5, 0.5)
+
+    # head
     glPushMatrix()
     glTranslatef(0, 0.58, 0)
     glScalef(1, 1.2, 1)
@@ -244,6 +252,95 @@ def draw_robot():
     glPopMatrix()
 
     glPopMatrix()
+def draw_checkerboard():
+    glPushMatrix()
+    glNormal3f(0, 1, 0)
+
+    size = 2
+    rows = 100
+    columns = 100
+
+    glTranslatef(-50, -2, -50)
+
+    specular = [1.0, 1.0, 1.0, 1.0]
+    shininess = 128.0
+
+    glMaterialfv(GL_FRONT, GL_SPECULAR, specular)
+    glMaterialf(GL_FRONT, GL_SHININESS, shininess)
+    glBegin(GL_QUADS)
+    for row in range(rows):
+        for col in range(columns):
+            if (row + col) % 2 == 0:
+                glColor3f(1, 1, 1)
+            else:
+                glColor3f(0, 0, 0)
+
+            glVertex3f(col * size, 0,  row * size)
+            glVertex3f(col * size, 0, (row + 1) * size)
+            glVertex3f((col + 1) * size, 0, (row + 1) * size)
+            glVertex3f((col + 1) * size, 0, row * size)
+    glEnd()
+    glPopMatrix()  # Restore the original matrix
+
+def draw_table():
+    # Table dimensions
+    top_width = 2.0
+    top_depth = 1.0
+    top_height = 0.1
+    leg_radius = 0.05
+    leg_height = 1.0
+
+    # place the table
+    glPushMatrix()
+    glTranslatef(1, 0, 0.5)
+    glScalef(0.5, 0.5, 0.5)
+
+
+    # draw the table base
+    glPushMatrix()
+    glColor3f(0.65, 0.32, 0.17)  # Brown color
+    glScalef(top_width, top_height, top_depth)
+    glutSolidCube(1)
+    glPopMatrix()
+
+    # Draw table legs
+    glPushMatrix()
+    glRotatef(90, 1, 0, 0)
+
+    # first leg
+    glPushMatrix()
+    glTranslatef(- top_width/2 + leg_radius,-leg_radius,  0)
+    draw_cylinder(leg_radius, leg_height, 32, 32)
+    glPopMatrix()
+
+    # second leg
+    glPushMatrix()
+    glTranslatef(-top_width / 2 + leg_radius,-1+ leg_radius, 0)
+    draw_cylinder(leg_radius, leg_height, 32, 32)
+    glPopMatrix()
+
+    # third leg
+    glPushMatrix()
+    glTranslatef(top_width / 2 - leg_radius, -leg_radius, 0)
+    draw_cylinder(leg_radius, leg_height, 32, 32)
+    glPopMatrix()
+
+    # forth leg
+    glPushMatrix()
+    glTranslatef(top_width / 2 - leg_radius,-1+ leg_radius, 0)
+    draw_cylinder(leg_radius, leg_height, 32, 32)
+    glPopMatrix()
+
+    glPopMatrix()
+
+    glPopMatrix()
+
+def draw_cylinder(radius, height, slices, stacks):
+    """ Draw a cylinder """
+    glPushMatrix()
+    glTranslatef(0, height / 2, 0)
+    gluCylinder(gluNewQuadric(), radius, radius, height, slices, stacks)
+    glPopMatrix()
 
 def myDisplay():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)  # Clear the color buffer and the depth buffer
@@ -254,29 +351,43 @@ def myDisplay():
               camera_distance * cos(camera_angle_y * pi / 180.0) * cos(camera_angle_x * pi / 180.0),
               0, 0, 0, 0, 1, 0)
 
+    draw_checkerboard()
     draw_robot()
+    draw_table()
+
 
     glutSwapBuffers()
     glFlush()
 
 def special_key_pressed(key, x, y):
-    global camera_angle_x, camera_angle_y, camera_distance
-
+    global camera_angle_x, camera_angle_y, camera_distance, head_angle
     # Adjust camera angles and distance based on arrow key pressed
     if key == GLUT_KEY_UP:
         camera_angle_x += 5.0
     elif key == GLUT_KEY_DOWN:
         camera_angle_x -= 5.0
     elif key == GLUT_KEY_LEFT:
-        camera_angle_y -= 5.0
+        if move_flag == 0:
+            camera_angle_y -= 5.0
+        elif move_flag == 1:
+            head_angle -= 5.0
     elif key == GLUT_KEY_RIGHT:
-        camera_angle_y += 5.0
+        if move_flag == 0:
+            camera_angle_y += 5.0
+        elif move_flag == 1:
+            head_angle += 5.0
+
+
 
     # Clamp camera angle within reasonable limits
     camera_angle_x = max(-90.0, min(90.0, camera_angle_x))
     camera_angle_y %= 360.0
 
     glutPostRedisplay()
+
+def key_pressed(key, x, y):
+    global move_flag
+    move_flag = int(key)
 
 # main to initialize the window size and start the main loop of the graphic
 def main():
@@ -291,7 +402,9 @@ def main():
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
     glutDisplayFunc(myDisplay)
     glutSpecialFunc(special_key_pressed)
+    glutKeyboardFunc(key_pressed)
     glutReshapeFunc(myReshape)
+    glClearColor(1, 1, 1, 1)
     glutMainLoop()
 
 
