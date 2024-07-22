@@ -158,11 +158,11 @@ def draw_body():
 
 
 def draw_head_features():
-    # Draw eyes, nose, mouth relative to the cube's transformations
+
 
     glRotate(head_angle,0,1,0)
     glScalef(2.0, 1.0, 1.0)
-    glColor3f(1.0, 0.0, 0.0)
+
     # head
     glutSolidCube(0.5)
     glEnable(GL_BLEND)
@@ -212,7 +212,7 @@ def draw_robot():
     glColor3f(1.0, 0.0, 0.0)
 
     # placing of the robot in the scene
-    glTranslatef(-1, 0, -1)
+    glTranslatef(-1, -1, -1)
     glScalef(0.5, 0.5, 0.5)
 
     # head
@@ -284,16 +284,16 @@ def draw_checkerboard():
 
 def draw_table():
     # Table dimensions
-    top_width = 2.0
-    top_depth = 1.0
-    top_height = 0.1
+    top_width = 2.5
+    top_depth = 1.5
+    top_height = 0.15
     leg_radius = 0.05
-    leg_height = 1.0
+    leg_height = 1.2
 
     # place the table
     glPushMatrix()
-    glTranslatef(1, 0, 0.5)
-    glScalef(0.5, 0.5, 0.5)
+    glTranslatef(1, -1.5, -0.5)
+    glScalef(0.8, 0.6, 0.5)
 
 
     # draw the table base
@@ -305,6 +305,7 @@ def draw_table():
 
     # Draw table legs
     glPushMatrix()
+    glTranslatef(0,0, top_height)
     glRotatef(90, 1, 0, 0)
 
     # first leg
@@ -315,7 +316,7 @@ def draw_table():
 
     # second leg
     glPushMatrix()
-    glTranslatef(-top_width / 2 + leg_radius,-1+ leg_radius, 0)
+    glTranslatef(-top_width / 2 + leg_radius,-top_depth , 0)
     draw_cylinder(leg_radius, leg_height, 32, 32)
     glPopMatrix()
 
@@ -327,7 +328,7 @@ def draw_table():
 
     # forth leg
     glPushMatrix()
-    glTranslatef(top_width / 2 - leg_radius,-1+ leg_radius, 0)
+    glTranslatef(top_width / 2 - leg_radius,-top_depth, 0)
     draw_cylinder(leg_radius, leg_height, 32, 32)
     glPopMatrix()
 
@@ -339,7 +340,36 @@ def draw_cylinder(radius, height, slices, stacks):
     """ Draw a cylinder """
     glPushMatrix()
     glTranslatef(0, height / 2, 0)
+    quadric = gluNewQuadric()
     gluCylinder(gluNewQuadric(), radius, radius, height, slices, stacks)
+    gluDeleteQuadric(quadric)
+    glPopMatrix()
+def draw_circle(radius):
+    """ Draw a 2D circle using gluDisk """
+    glPushMatrix()
+    quadric = gluNewQuadric()
+    gluDisk(gluNewQuadric(), 0, radius, 32, 1)
+    gluDeleteQuadric(quadric)
+    glPopMatrix()
+def drew_tresh_can():
+    glPushMatrix()
+
+    specular = [1.0, 1.0, 1.0, 1.0]
+    shininess = 128.0
+
+    glMaterialfv(GL_FRONT, GL_SPECULAR, specular)
+    glMaterialf(GL_FRONT, GL_SHININESS, shininess)
+    glColor3f(0.5, 0.5, 0.5)
+
+    glTranslatef(1.7, -1.8, -0.5)
+    glRotatef(90, 1, 0, 0)
+    draw_cylinder(0.15, 0.4, 32,32)
+
+    glColor3f(0, 0, 0)
+    glTranslatef(0, 0.2, 0)
+    draw_circle(0.15)
+
+
     glPopMatrix()
 
 def myDisplay():
@@ -354,6 +384,7 @@ def myDisplay():
     draw_checkerboard()
     draw_robot()
     draw_table()
+    drew_tresh_can()
 
 
     glutSwapBuffers()
@@ -404,7 +435,7 @@ def main():
     glutSpecialFunc(special_key_pressed)
     glutKeyboardFunc(key_pressed)
     glutReshapeFunc(myReshape)
-    glClearColor(1, 1, 1, 1)
+    glClearColor(0.1, 0.1, 0.1, 1)
     glutMainLoop()
 
 
