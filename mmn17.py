@@ -12,6 +12,9 @@ camera_angle_y = 0.0
 camera_distance = 6.0
 head_angle = 0
 move_flag = 0
+shoulder_angle = 0
+elbow_angle = 0
+ambient_factor = 0.3
 # myRespahe function to be called when the user resize the window
 def myReshape(width, height):
     if height == 0:
@@ -27,8 +30,7 @@ def myReshape(width, height):
     glMatrixMode(GL_MODELVIEW)  # To operate on the model-view matrix
     glLoadIdentity()  # Reset the model-view matrix
 
-shoulder_angle = 0
-elbow_angle = 0
+
 
 def draw_cube():
     glutSolidCube(1.0)
@@ -381,22 +383,54 @@ def myDisplay():
               camera_distance * cos(camera_angle_y * pi / 180.0) * cos(camera_angle_x * pi / 180.0),
               0, 0, 0, 0, 1, 0)
 
+    lighting()
     draw_checkerboard()
     draw_robot()
     draw_table()
     drew_tresh_can()
 
 
+
     glutSwapBuffers()
     glFlush()
 
+
+def lighting():
+    glEnable(GL_LIGHTING)  # Enable lighting
+
+    glEnable(GL_COLOR_MATERIAL)
+    glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE)
+    # Light model parameters:
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, [ambient_factor, ambient_factor, ambient_factor, 1])  # Ambient light
+
+    """
+    # Spotlight properties
+    light_position = [0, 0, 6, 1.0]  # Spotlight position
+    light_direction = [0, 0, -1]  # The direction vector pointing downwards
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position)
+    glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, light_direction)
+    glLightfv(GL_LIGHT0, GL_SPOT_CUTOFF, 45.0)  # Beam width
+    glLightfv(GL_LIGHT0, GL_SPOT_EXPONENT, 2)  # Focus strength
+
+    # Define light intensity
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, [1, 1, 1, 1.0])  # White diffuse light
+    glLightfv(GL_LIGHT0, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])  # White specular light
+    """
 def special_key_pressed(key, x, y):
-    global camera_angle_x, camera_angle_y, camera_distance, head_angle
+    global camera_angle_x, camera_angle_y, camera_distance, head_angle,ambient_factor
     # Adjust camera angles and distance based on arrow key pressed
     if key == GLUT_KEY_UP:
-        camera_angle_x += 5.0
+        if move_flag == 9:
+            if ambient_factor <= 1:
+                ambient_factor += 0.05
+        elif move_flag == 0:
+            camera_angle_x += 5.0
     elif key == GLUT_KEY_DOWN:
-        camera_angle_x -= 5.0
+        if move_flag == 9:
+            if ambient_factor >= 0:
+                ambient_factor -= 0.05
+        elif move_flag == 0:
+            camera_angle_x -= 5.0
     elif key == GLUT_KEY_LEFT:
         if move_flag == 0:
             camera_angle_y -= 5.0
@@ -417,8 +451,11 @@ def special_key_pressed(key, x, y):
     glutPostRedisplay()
 
 def key_pressed(key, x, y):
-    global move_flag
+    global move_flag,ambient_factor
     move_flag = int(key)
+
+
+
 
 # main to initialize the window size and start the main loop of the graphic
 def main():
