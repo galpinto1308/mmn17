@@ -1,15 +1,41 @@
-import OpenGL
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 from math import *
 import sys
-import os
+
+import robot
+from robot import *
+from floor import *
+from furniture import *
 
 # Global variables for camera rotation
 camera_angle_x = 0.0
 camera_angle_y = 0.0
 camera_distance = 6.0
+
+ambient_factor = 0.9
+move_flag = 0
+
+
+def myDisplay():
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)  # Clear the color buffer and the depth buffer
+    glLoadIdentity()
+    # Set camera position and orientation
+    gluLookAt(camera_distance * sin(camera_angle_y * pi / 180.0) * cos(camera_angle_x * pi / 180.0),
+              camera_distance * sin(camera_angle_x * pi / 180.0),
+              camera_distance * cos(camera_angle_y * pi / 180.0) * cos(camera_angle_x * pi / 180.0),
+              0, 0, 0, 0, 1, 0)
+
+    lighting()
+    draw_checkerboard()
+    draw_robot()
+    draw_table()
+    draw_tresh_can()
+
+    glutSwapBuffers()
+    glFlush()
+
 
 # myRespahe function to be called when the user resize the window
 def myReshape(width, height):
@@ -26,257 +52,64 @@ def myReshape(width, height):
     glMatrixMode(GL_MODELVIEW)  # To operate on the model-view matrix
     glLoadIdentity()  # Reset the model-view matrix
 
-shoulder_angle = 0
-elbow_angle = 0
 
-def draw_cube():
-    glutSolidCube(1.0)
+def lighting():
+    glEnable(GL_LIGHTING)  # Enable lighting
 
-def draw_prism():
-    glBegin(GL_QUADS)
-    # Front face
-    glVertex3f(-0.5, -0.5,  0.5)
-    glVertex3f( 0.5, -0.5,  0.5)
-    glVertex3f( 0.5,  0.5,  0.5)
-    glVertex3f(-0.5,  0.5,  0.5)
-    # Back face
-    glVertex3f(-0.5, -0.5, -0.5)
-    glVertex3f( 0.5, -0.5, -0.5)
-    glVertex3f( 0.5,  0.5, -0.5)
-    glVertex3f(-0.5,  0.5, -0.5)
-    # Top face
-    glVertex3f(-0.5,  0.5, -0.5)
-    glVertex3f( 0.5,  0.5, -0.5)
-    glVertex3f( 0.5,  0.5,  0.5)
-    glVertex3f(-0.5,  0.5,  0.5)
-    # Bottom face
-    glVertex3f(-0.5, -0.5, -0.5)
-    glVertex3f( 0.5, -0.5, -0.5)
-    glVertex3f( 0.5, -0.5,  0.5)
-    glVertex3f(-0.5, -0.5,  0.5)
-    # Right face
-    glVertex3f( 0.5, -0.5, -0.5)
-    glVertex3f( 0.5,  0.5, -0.5)
-    glVertex3f( 0.5,  0.5,  0.5)
-    glVertex3f( 0.5, -0.5,  0.5)
-    # Left face
-    glVertex3f(-0.5, -0.5, -0.5)
-    glVertex3f(-0.5,  0.5, -0.5)
-    glVertex3f(-0.5,  0.5,  0.5)
-    glVertex3f(-0.5, -0.5,  0.5)
-    glEnd()
+    glEnable(GL_COLOR_MATERIAL)
+    glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE)
+    # Light model parameters:
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, [ambient_factor, ambient_factor, ambient_factor, 1])  # Ambient light
 
-def draw_sphere(radius):
-    quadric = gluNewQuadric()
-    gluSphere(quadric, radius, 20, 20)
-    gluDeleteQuadric(quadric)
+    """
+    # Spotlight properties
+    light_position = [0, 0, 6, 1.0]  # Spotlight position
+    light_direction = [0, 0, -1]  # The direction vector pointing downwards
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position)
+    glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, light_direction)
+    glLightfv(GL_LIGHT0, GL_SPOT_CUTOFF, 45.0)  # Beam width
+    glLightfv(GL_LIGHT0, GL_SPOT_EXPONENT, 2)  # Focus strength
 
-def draw_claw():
-
-    glTranslatef(0, -0.65, 0.0)
-    glColor3f(0.1, 0.0, 0.0)
-    glPushMatrix()
-    glScalef(1.3, 1, 0.6)
-    draw_sphere(0.5)
-    glPopMatrix()
-    glColor3f(1, 0.0, 0.0)
-
-    # Draw the first prism
-    glTranslatef(0.0, -1.5, 0.0)
-    glPushMatrix()
-    glTranslatef(-0.5, 0.0, 0.0)
-    glRotatef(-45, 0.0, 0.0, 1.0)
-    glScalef(1.0, 2.0, 0.5)
-    draw_prism()
-    glPopMatrix()
-
-    # Draw the second prism
-    glPushMatrix()
-    glTranslatef(0.5, 0.0, 0.0)
-    glRotatef(45, 0.0, 0.0, 1.0)
-    glScalef(1.0, 2.0, 0.5)
-    draw_prism()
-    glPopMatrix()
-
-def draw_arm():
-    global shoulder_angle, elbow_angle
-
-    # Draw the shoulder
-    glPushMatrix()
-    glRotatef(shoulder_angle, 1.0, 0.0, 0.0)
-    glTranslatef(-0.8, 0, 0.0)
-    glPushMatrix()
-    glScalef(0.5, 0.5, 0.5)  # Scale to make a rectangular shape
-    draw_cube()
-    glPopMatrix()
-
-    # Draw the elbow
-    glTranslatef(0.0, -0.5, 0.0)
-    glRotatef(elbow_angle, 1.0, 0.0, 0.0)
-    glPushMatrix()
-    glScalef(0.5, 1.0, 0.5)  # Scale to make a rectangular shape
-    draw_cube()
-    glPopMatrix()
-
-    # Draw the hand (claw)
-    glPushMatrix()
-    glTranslatef(-0.1, -0.45, 0.0)
-    glScalef(0.15, 0.15, 0.3)
-    draw_claw()
-    glPopMatrix()
-
-    glPopMatrix()
-
-
-def draw_body():
-    glTranslatef(0.0, 0.25, 0.0)
-    glRotatef(90, 1, 0, 0)
-    glScalef(1.3, 1.1, 1.75)
-
-    # Create a quadric object
-    quadric = gluNewQuadric()
-    gluQuadricNormals(quadric, GLU_SMOOTH)
-
-    # Draw the cylinder
-    gluCylinder(quadric, 0.5, 0.5, 1.0, 20, 20)
-
-    # Draw the bottom cap
-    glPushMatrix()
-    glTranslatef(0.0, 0.0, 0.0)  # move to the bottom
-    gluDisk(quadric, 0.0, 0.5, 20, 1)
-    glPopMatrix()
-
-    # Draw the top cap
-    glPushMatrix()
-    glTranslatef(0.0, 0.0, 1.0)  # move to the top
-    gluDisk(quadric, 0.0, 0.5, 20, 1)
-    glPopMatrix()
-
-    # Delete the quadric object
-    gluDeleteQuadric(quadric)
-
-
-def draw_head_features():
-    # Draw eyes, nose, mouth relative to the cube's transformations
-    # Eyes
-    # Apply scaling to make the cube a rectangular cuboid
-    glScalef(2.0, 1.0, 1.0)  # Scale x by 2, y and z remain the same
-    glColor3f(1.0, 0.0, 0.0)
-    # Draw the solid cube
-    glutSolidCube(0.5)
-    glEnable(GL_BLEND)  # Enable blending, which is required for smoothing
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)  # Set blend function
-    glEnable(GL_LINE_SMOOTH)  # Enable line smoothing
-    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)  # Optional: ask for the nicest line smoothing
-    glLineWidth(1.5)  # Optional: set line width to make it slightly thicker
-    glutWireCube(0.5)
-
-    glColor3f(0, 0, 0)  # Black color for the eyes
-    glPushMatrix()
-    glTranslatef(-0.1, 0.12, 0.26)  # Adjust the position so it is relative to cube size
-    glutSolidSphere(0.05, 32, 32)  # Use solid spheres for 3D eyes
-    glPopMatrix()
-
-    glPushMatrix()
-    glTranslatef(0.1, 0.12, 0.26)
-    glutSolidSphere(0.05, 32, 32)
-    glPopMatrix()
-
-    # Nose
-    glPushMatrix()
-    glTranslatef(0, 0, 0.26)
-    glBegin(GL_TRIANGLES)
-    glVertex3f(-0.025, 0, 0)
-    glVertex3f(0.025, 0, 0)
-    glVertex3f(0, 0.05, 0)
-    glEnd()
-    glPopMatrix()
-
-    # Mouth - Adjust the position and dimensions to ensure it's centered on the scaled cuboid
-    glPushMatrix()  # Apply the same scale as the cube to ensure correct positioning
-    glScalef(2.0, 1.0, 1.0)  # Match scaling to the cube's scaling
-    glBegin(GL_QUADS)
-    glVertex3f(-0.075 / 2, -0.1, 0.26)  # Adjust the x-coordinates to compensate for scaling
-    glVertex3f(0.075 / 2, -0.1, 0.26)
-    glVertex3f(0.075 / 2, -0.15, 0.26)
-    glVertex3f(-0.075 / 2, -0.15, 0.26)
-    glEnd()
-    glPopMatrix()
-
-
-def draw_robot():
-    glPushMatrix()
-    glColor3f(1.0, 0.0, 0.0)  # Red color
-
-    glPushMatrix()
-    glTranslatef(0, 0.58, 0)
-    glScalef(1, 1.2, 1)
-    draw_head_features()
-    glPopMatrix()
-
-    glColor3f(1.0, 0.0, 0.0)
-
-    # Body (cylinder)
-    glPushMatrix()
-    draw_body()
-    glPopMatrix()
-
-    glPushMatrix()
-    draw_arm()
-    glPopMatrix()
-
-    glPushMatrix()
-    glScalef(-1, 1, 1)
-    draw_arm()
-    glPopMatrix()
-
-    # Legs (cubes)
-    glPushMatrix()
-    glTranslatef(0.3, -2.0, 0.0)
-    glScalef(0.5, 1.0, 0.5)  # Scale down and elongate the cube
-    draw_cube()
-    glPopMatrix()
-
-    glPushMatrix()
-    glTranslatef(-0.3, -2.0, 0.0)
-    glScalef(0.5, 1.0, 0.5)  # Scale down and elongate the cube
-    draw_cube()
-    glPopMatrix()
-
-    glPopMatrix()
-
-def myDisplay():
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)  # Clear the color buffer and the depth buffer
-    glLoadIdentity()
-    # Set camera position and orientation
-    gluLookAt(camera_distance * sin(camera_angle_y * pi / 180.0) * cos(camera_angle_x * pi / 180.0),
-              camera_distance * sin(camera_angle_x * pi / 180.0),
-              camera_distance * cos(camera_angle_y * pi / 180.0) * cos(camera_angle_x * pi / 180.0),
-              0, 0, 0, 0, 1, 0)
-
-    draw_robot()
-
-    glutSwapBuffers()
-    glFlush()
-
-def special_key_pressed(key, x, y):
-    global camera_angle_x, camera_angle_y, camera_distance
+    # Define light intensity
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, [1, 1, 1, 1.0])  # White diffuse light
+    glLightfv(GL_LIGHT0, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])  # White specular light
+    """
+def arrows_key_pressed(key, x, y):
+    global camera_angle_x, camera_angle_y, camera_distance, move_flag, ambient_factor
 
     # Adjust camera angles and distance based on arrow key pressed
     if key == GLUT_KEY_UP:
-        camera_angle_x += 5.0
+        if move_flag == 9:
+            if ambient_factor <= 1:
+                ambient_factor += 0.05
+        elif move_flag == 0:
+            camera_angle_x += 5.0
     elif key == GLUT_KEY_DOWN:
-        camera_angle_x -= 5.0
+        if move_flag == 9:
+            if ambient_factor >= 0:
+                ambient_factor -= 0.05
+        elif move_flag == 0:
+            camera_angle_x -= 5.0
     elif key == GLUT_KEY_LEFT:
-        camera_angle_y -= 5.0
+        if move_flag == 0:
+            camera_angle_y -= 5.0
+        elif move_flag == 1:
+            robot.head_angle -= 5.0
     elif key == GLUT_KEY_RIGHT:
-        camera_angle_y += 5.0
+        if move_flag == 0:
+            camera_angle_y += 5.0
+        elif move_flag == 1:
+            robot.head_angle += 5.0
 
     # Clamp camera angle within reasonable limits
     camera_angle_x = max(-90.0, min(90.0, camera_angle_x))
     camera_angle_y %= 360.0
 
     glutPostRedisplay()
+
+def key_pressed(key, x, y):
+    global move_flag
+    move_flag = int(key)
 
 # main to initialize the window size and start the main loop of the graphic
 def main():
@@ -290,7 +123,8 @@ def main():
     glShadeModel(GL_SMOOTH)
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
     glutDisplayFunc(myDisplay)
-    glutSpecialFunc(special_key_pressed)
+    glutSpecialFunc(arrows_key_pressed)
+    glutKeyboardFunc(key_pressed)
     glutReshapeFunc(myReshape)
     glutMainLoop()
 
