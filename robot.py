@@ -1,13 +1,26 @@
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
+from obb import OBB
+import numpy as np
 
-global head_angle, hand_angle, elbow_angle, shoulder_angle
+global head_angle, hand_angle, elbow_angle, shoulder_angle, rotation_angle_all
+global velocity, acceleration, max_speed, pos, speed
 
 shoulder_angle = 0
 elbow_angle = 0
 hand_angle = 0
 head_angle = 0
+
+pos = [0.0, 0.0, 0.0]
+velocity = [0.0, 0.0, 0.0]
+speed = 2.5
+acceleration = 0.2  # Acceleration for smooth start
+max_speed = 4.0  # Maximum speed
+rotation_angle_all = 0.0
+
+def lerp(start, end, t):
+    return start + t * (end - start)
 
 def draw_sphere(radius):
     quadric = gluNewQuadric()
@@ -195,9 +208,13 @@ def draw_head_features():
 
 
 def draw_robot():
+    global pos, rotation_angle_all
+    
     glPushMatrix()
     glColor3f(1.0, 0.0, 0.0)  # Red color
-
+    glTranslatef(pos[0], pos[1], pos[2])
+    glRotatef(rotation_angle_all, 0, 1, 0)
+    
     glPushMatrix()
     glTranslatef(0, 0.56, 0)
     glScalef(1, 1.2, 1)
@@ -232,5 +249,26 @@ def draw_robot():
     glScalef(0.5, 1.0, 0.5)  # Scale down and elongate the cube
     draw_cube()
     glPopMatrix()
-
+    
     glPopMatrix()
+
+def draw_robot_obb():
+    global pos, rotation_angle_all
+
+    # Define the half-sizes for the OBB (half the dimensions of the bounding box)
+    half_sizes = np.array([1.38, 2.5, 0.875])  # This encompasses the entire robot
+
+    # Create the rotation matrix for the OBB based on the rotation angle of the robot
+    angle_rad = np.radians(rotation_angle_all)
+    cos_angle = np.cos(angle_rad)
+    sin_angle = np.sin(angle_rad)
+    rotation_matrix = np.array([
+        [cos_angle, 0, -sin_angle],
+        [0, 1, 0],
+        [sin_angle, 0, cos_angle]
+    ])
+
+    # Create the OBB
+    robot_obb = OBB(pos, half_sizes, rotation_matrix)
+
+    return robot_obb
