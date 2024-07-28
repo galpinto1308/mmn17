@@ -20,6 +20,7 @@ camera_distance = 7.0
 
 ambient_factor = 0.9
 move_flag = -1
+robot_view = 0
 
 # State to keep track of which keys are pressed
 keys = {"a": False, "d": False, "w": False, "s": False}
@@ -28,11 +29,29 @@ def myDisplay():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)  # Clear the color buffer and the depth buffer
     glLoadIdentity()
     # Set camera position and orientation
-    gluLookAt(robot.pos[0] + camera_distance * math.sin(camera_angle_y * math.pi / 180.0) * math.cos(camera_angle_x * math.pi / 180.0),
-              robot.pos[1] + camera_distance * math.sin(camera_angle_x * math.pi / 180.0),
-              robot.pos[2] + camera_distance * math.cos(camera_angle_y * math.pi / 180.0) * math.cos(camera_angle_x * math.pi / 180.0),
-              robot.pos[0], robot.pos[1], robot.pos[2], 0, 1, 0)
+    if robot_view:
+        target_offset = [0, 0, 5]  # init point of looking (outside of screen)
+        eye_offset = [0, 0.68, 0.25]  # the offset of the robot eyes from its center
+        # rotate eyes and target positions around y-axis if needed
+        rotation_angle_rad = math.radians(robot.rotation_angle_all + robot.head_angle)
 
+        eye_x = eye_offset[0] * math.cos(rotation_angle_rad) + eye_offset[2] * math.sin(rotation_angle_rad)
+        eye_z = eye_offset[2] * math.cos(rotation_angle_rad) - eye_offset[0] * math.sin(rotation_angle_rad)
+        eye_position = [robot.pos[0] + eye_x, robot.pos[1] + eye_offset[1], robot.pos[2] + eye_z]
+
+        target_x = target_offset[0] * math.cos(rotation_angle_rad) + target_offset[2] * math.sin(rotation_angle_rad)
+        target_z = target_offset[2] * math.cos(rotation_angle_rad) - target_offset[0] * math.sin(rotation_angle_rad)
+        target_position = [robot.pos[0] + target_x, robot.pos[1], robot.pos[2] + target_z]
+
+        gluLookAt(eye_position[0], eye_position[1], eye_position[2],
+                  target_position[0], target_position[1], target_position[2], 0, 1, 0)
+    else:
+        gluLookAt(robot.pos[0] + camera_distance * math.sin(camera_angle_y * math.pi / 180.0) * math.cos(
+            camera_angle_x * math.pi / 180.0),
+                  robot.pos[1] + camera_distance * math.sin(camera_angle_x * math.pi / 180.0),
+                  robot.pos[2] + camera_distance * math.cos(camera_angle_y * math.pi / 180.0) * math.cos(
+                      camera_angle_x * math.pi / 180.0),
+                  robot.pos[0], robot.pos[1], robot.pos[2], 0, 1, 0)
     lighting()
     draw_checkerboard()
     draw_walls()
@@ -118,13 +137,13 @@ def key_pressed(key, x, y):
     glutPostRedisplay()
 
 def update_move(key, x, y):
-    global move_flag
+    global move_flag, robot_view
     
     try:
         move_flag = int(key)
     except:
         move_flag = move_flag
-        
+
     if key == b'a':
         keys["a"] = True
     elif key == b'd':
@@ -133,6 +152,10 @@ def update_move(key, x, y):
         keys["w"] = True
     elif key == b's':
         keys["s"] = True
+    elif key == b'r':
+        robot_view = True
+    elif move_flag == 0:
+        robot_view = False
     update_velocity()
     
 
