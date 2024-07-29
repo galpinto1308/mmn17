@@ -48,7 +48,7 @@ def draw_table():
 
     # second leg
     glPushMatrix()
-    glTranslatef(-top_width / 2 + leg_radius,-top_depth , 0)
+    glTranslatef(-top_width / 2 + leg_radius,-top_depth + leg_radius, 0)
     draw_cylinder(leg_radius, leg_height, 32, 32)
     glPopMatrix()
 
@@ -60,7 +60,7 @@ def draw_table():
 
     # forth leg
     glPushMatrix()
-    glTranslatef(top_width / 2 - leg_radius,-top_depth, 0)
+    glTranslatef(top_width / 2 - leg_radius,-top_depth + leg_radius, 0)
     draw_cylinder(leg_radius, leg_height, 32, 32)
     glPopMatrix()
 
@@ -72,9 +72,13 @@ def draw_table():
 def draw_tresh_can():
     glPushMatrix()
 
-    specular = [1.0, 1.0, 1.0, 1.0]
-    shininess = 128.0
+    ambient = [0.1, 0.1, 0.1, 1.0]  # Low ambient reflection
+    diffuse = [0.4, 0.4, 0.4, 1.0]  # Moderate diffuse reflection
+    specular = [1, 1, 1, 1.0]  # High specular reflection
+    shininess = 128.0  # High shininess for sharp highlights
 
+    glMaterialfv(GL_FRONT, GL_AMBIENT, ambient)
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse)
     glMaterialfv(GL_FRONT, GL_SPECULAR, specular)
     glMaterialf(GL_FRONT, GL_SHININESS, shininess)
     glColor3f(0.5, 0.5, 0.5)

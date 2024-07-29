@@ -5,8 +5,8 @@ from obb import OBB
 import numpy as np
 
 size = 2
-rows = 60
-columns = 60
+rows = 20
+columns = 20
 wall_height = 8.0
 
 
@@ -14,7 +14,7 @@ def draw_checkerboard():
     glPushMatrix()
     glNormal3f(0, 1, 0) 
 
-    glTranslatef(-(rows / 2), -2.75, -(columns / 2))
+    glTranslatef(-(rows / 2) - 2, -2.75, -(columns / 2) - 7)
 
     specular = [1.0, 1.0, 1.0, 1.0]
     shininess = 128.0
@@ -39,7 +39,7 @@ def draw_checkerboard():
 
 def draw_walls():
     glPushMatrix()
-    glTranslatef(-(rows / 2), -2.75, -(columns / 2))
+    glTranslatef(-(rows / 2) - 2, -2.75, -(columns / 2) - 7)
 
     glColor3f(0.6, 0.6, 0.6)  # Wall color
 
