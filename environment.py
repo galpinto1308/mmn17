@@ -43,6 +43,7 @@ def draw_walls():
 
     # Left wall
     glBegin(GL_QUADS)
+    glNormal3f(1, 0, 0)  # Normal pointing out from the left wall (towards the viewer if viewing from the left)
     glTexCoord2f(0.0, 0.0)
     glVertex3f(0, 0, 0)
     glTexCoord2f(0.0, 1.0)
@@ -55,6 +56,7 @@ def draw_walls():
 
     # Right wall
     glBegin(GL_QUADS)
+    glNormal3f(-1, 0, 0)  # Normal pointing into the right wall (away from the viewer if viewing from the left)
     glTexCoord2f(0.0, 0.0)
     glVertex3f(rows * size, 0, 0)
     glTexCoord2f(0.0, 1.0)
@@ -67,6 +69,7 @@ def draw_walls():
 
     # Front wall
     glBegin(GL_QUADS)
+    glNormal3f(0, 0, 1)  # Normal pointing outwards from the front wall
     glTexCoord2f(0.0, 0.0)
     glVertex3f(0, 0, 0)
     glTexCoord2f(0.0, 1.0)
@@ -79,6 +82,7 @@ def draw_walls():
 
     # Back wall
     glBegin(GL_QUADS)
+    glNormal3f(0, 0, -1)  # Normal pointing inwards towards the back wall
     glTexCoord2f(0.0, 0.0)
     glVertex3f(0, 0, columns * size)
     glTexCoord2f(0.0, 1.0)
@@ -88,9 +92,10 @@ def draw_walls():
     glTexCoord2f(1.0, 0.0)
     glVertex3f(rows * size, 0, columns * size)
     glEnd()
+
     glBindTexture(GL_TEXTURE_2D, 0)
     glPopMatrix()
-    glBindTexture(GL_TEXTURE_2D, 0)
+
 
 def draw_wall_obbs():
     wall_obbs = []
