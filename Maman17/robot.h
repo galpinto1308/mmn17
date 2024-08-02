@@ -2,6 +2,7 @@
 #define ROBOT_H
 
 #include "obb.h"
+#include "texture_loader.h"
 
 #define PI 3.14159265358979323846
 
@@ -17,13 +18,15 @@ public:
 
 private:
     float lerp(float start, float end, float t) const;
-    void drawSphere(float radius) const;
-    void drawCube() const;
     void drawPrism() const;
     void drawClaw() const;
     void drawArm() const;
     void drawBody() const;
     void drawHeadFeatures() const;
+    void setShinyMaterial() const;
+    void drawCubeWithTexture() const;
+    void drawTexturedDisk(GLfloat innerRadius, GLfloat outerRadius, GLint slices) const;
+    void drawTexturedCylinder(GLfloat radius, GLfloat height, GLint slices, GLint stacks) const;
 };
 
 #endif // ROBOT_H

@@ -40,41 +40,44 @@ void Environment::drawWalls() {
     glTranslatef(-(rows / 2) - 2, -2.75, -(columns / 2) - 7);
 
     glColor3f(0.6, 0.6, 0.6);
+    glBindTexture(GL_TEXTURE_2D, (*texture_ids)["textures/walls.jpg"]);
 
-    glBegin(GL_QUADS);
     // Left wall
-    glVertex3f(0, 0, 0);
-    glVertex3f(0, wall_height, 0);
-    glVertex3f(0, wall_height, columns * size);
-    glVertex3f(0, 0, columns * size);
+    glBegin(GL_QUADS);
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(0, 0, 0);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(0, wall_height, 0);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(0, wall_height, columns * size);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(0, 0, columns * size);
     glEnd();
 
-    glBegin(GL_QUADS);
     // Right wall
-    glVertex3f(rows * size, 0, 0);
-    glVertex3f(rows * size, wall_height, 0);
-    glVertex3f(rows * size, wall_height, columns * size);
-    glVertex3f(rows * size, 0, columns * size);
+    glBegin(GL_QUADS);
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(rows * size, 0, 0);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(rows * size, wall_height, 0);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(rows * size, wall_height, columns * size);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(rows * size, 0, columns * size);
     glEnd();
 
-    glBegin(GL_QUADS);
     // Front wall
-    glVertex3f(0, 0, 0);
-    glVertex3f(0, wall_height, 0);
-    glVertex3f(rows * size, wall_height, 0);
-    glVertex3f(rows * size, 0, 0);
-    glEnd();
-
     glBegin(GL_QUADS);
-    // Back wall
-    glVertex3f(0, 0, columns * size);
-    glVertex3f(0, wall_height, columns * size);
-    glVertex3f(rows * size, wall_height, columns * size);
-    glVertex3f(rows * size, 0, columns * size);
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(0, 0, 0);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(0, wall_height, 0);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(rows * size, wall_height, 0);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(rows * size, 0, 0);
     glEnd();
 
+    // Back wall
+    glBegin(GL_QUADS);
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(0, 0, columns * size);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(0, wall_height, columns * size);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(rows * size, wall_height, columns * size);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(rows * size, 0, columns * size);
+    glEnd();
+
+    glBindTexture(GL_TEXTURE_2D, 0);
     glPopMatrix();
 }
+
 
 void Environment::createWallObbs() {
     Eigen::Vector3f center_shift(-(rows / 2) - 2, -2.75, -(columns / 2) - 7);

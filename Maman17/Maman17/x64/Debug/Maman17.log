@@ -1,0 +1,11 @@
+﻿  environment.cpp
+  furniture.cpp
+  main.cpp
+  obb.cpp
+M:\Users\netan\Desktop\Maman17\environment.cpp(1,10): error C1083: Cannot open include file: 'Header Files/environment.h': No such file or directory
+M:\Users\netan\Desktop\Maman17\furniture.cpp(1,10): error C1083: Cannot open include file: 'Header Files/furniture.h': No such file or directory
+M:\Users\netan\Desktop\Maman17\main.cpp(1,10): error C1083: Cannot open include file: 'Header Files/main.h': No such file or directory
+M:\Users\netan\Desktop\Maman17\obb.cpp(1,10): error C1083: Cannot open include file: 'Header Files/obb.h': No such file or directory
+  robot.cpp
+M:\Users\netan\Desktop\Maman17\robot.cpp(1,10): error C1083: Cannot open include file: 'Header Files/robot.h': No such file or directory
+  Generating Code...

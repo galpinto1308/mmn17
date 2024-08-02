@@ -1,15 +1,65 @@
 #include "furniture.h"
 
-void Furniture::drawCylinder(float radius, float height, int slices, int stacks) const {
-    glPushMatrix();
-    glTranslatef(0, height / 2, 0);
-    GLUquadric* quadric = gluNewQuadric();
-    gluCylinder(quadric, radius, radius, height, slices, stacks);
-    gluDeleteQuadric(quadric);
-    glPopMatrix();
+void Furniture::drawTexturedCube(float width, float height, float depth) const {
+    glBegin(GL_QUADS);
+    // Front face
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(-width / 2, -height / 2, depth / 2);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(width / 2, -height / 2, depth / 2);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(width / 2, height / 2, depth / 2);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(-width / 2, height / 2, depth / 2);
+    // Back face
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(-width / 2, -height / 2, -depth / 2);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(width / 2, -height / 2, -depth / 2);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(width / 2, height / 2, -depth / 2);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(-width / 2, height / 2, -depth / 2);
+    // Top face
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(-width / 2, height / 2, -depth / 2);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(width / 2, height / 2, -depth / 2);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(width / 2, height / 2, depth / 2);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(-width / 2, height / 2, depth / 2);
+    // Bottom face
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(-width / 2, -height / 2, -depth / 2);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(width / 2, -height / 2, -depth / 2);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(width / 2, -height / 2, depth / 2);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(-width / 2, -height / 2, depth / 2);
+    // Right face
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(width / 2, -height / 2, -depth / 2);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(width / 2, height / 2, -depth / 2);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(width / 2, height / 2, depth / 2);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(width / 2, -height / 2, depth / 2);
+    // Left face
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(-width / 2, -height / 2, -depth / 2);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(-width / 2, -height / 2, depth / 2);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(-width / 2, height / 2, depth / 2);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(-width / 2, height / 2, -depth / 2);
+    glEnd();
 }
 
-void Furniture::drawTable() const {
+void Furniture::drawTexturedCylinder(GLfloat radius, GLfloat height, GLint slices, GLint stacks) const 
+{
+    GLfloat angleStep = 2.0f * PI / slices;
+    GLfloat stackHeight = height / stacks;
+
+    for (GLint i = 0; i < stacks; ++i) {
+        GLfloat z0 = i * stackHeight;
+        GLfloat z1 = (i + 1) * stackHeight;
+
+        glBegin(GL_QUAD_STRIP);
+        for (GLint j = 0; j <= slices; ++j) {
+            GLfloat angle = j * angleStep;
+            GLfloat x = radius * cos(angle);
+            GLfloat y = radius * sin(angle);
+            glTexCoord2f((GLfloat)j / slices, (GLfloat)i / stacks);
+            glVertex3f(x, y, z0);
+            glTexCoord2f((GLfloat)j / slices, (GLfloat)(i + 1) / stacks);
+            glVertex3f(x, y, z1);
+        }
+        glEnd();
+    }
+}
+
+void Furniture::drawTable() const 
+{
     float top_width = 2.5f;
     float top_depth = 1.5f;
     float top_height = 0.15f;
@@ -19,11 +69,10 @@ void Furniture::drawTable() const {
     glPushMatrix();
     glScalef(1.5f, 1.2f, 1.5f);
     glTranslatef(4.0f, -1.2f, -0.5f);
+    glBindTexture(GL_TEXTURE_2D, (*texture_ids)["textures/wood.png"]);
 
     glPushMatrix();
-    glColor3f(0.65f, 0.32f, 0.17f);
-    glScalef(top_width, top_height, top_depth);
-    glutSolidCube(1.0f);
+    drawTexturedCube(top_width, top_height, top_depth);
     glPopMatrix();
 
     glPushMatrix();
@@ -31,25 +80,26 @@ void Furniture::drawTable() const {
     glRotatef(90, 1, 0, 0);
 
     glPushMatrix();
-    glTranslatef(-top_width / 2 + leg_radius, -leg_radius, 0);
-    drawCylinder(leg_radius, leg_height, 32, 32);
+    glTranslatef(-top_width / 2 + leg_radius, 0.52, 0);
+    drawTexturedCylinder(leg_radius, leg_height, 32, 32);
     glPopMatrix();
 
     glPushMatrix();
-    glTranslatef(-top_width / 2 + leg_radius, -top_depth + leg_radius, 0);
-    drawCylinder(leg_radius, leg_height, 32, 32);
+    glTranslatef(-top_width / 2 + leg_radius, -0.8, 0);
+    drawTexturedCylinder(leg_radius, leg_height, 32, 32);
     glPopMatrix();
 
     glPushMatrix();
-    glTranslatef(top_width / 2 - leg_radius, -leg_radius, 0);
-    drawCylinder(leg_radius, leg_height, 32, 32);
+    glTranslatef(top_width / 2 - leg_radius, 0.52, 0);
+    drawTexturedCylinder(leg_radius, leg_height, 32, 32);
     glPopMatrix();
 
     glPushMatrix();
-    glTranslatef(top_width / 2 - leg_radius, -top_depth + leg_radius, 0);
-    drawCylinder(leg_radius, leg_height, 32, 32);
+    glTranslatef(top_width / 2 - leg_radius, -0.8, 0);
+    drawTexturedCylinder(leg_radius, leg_height, 32, 32);
     glPopMatrix();
 
+    glBindTexture(GL_TEXTURE_2D, 0);
     glPopMatrix();
 
     glPopMatrix();
@@ -72,10 +122,11 @@ void Furniture::drawTrashCan() const {
     glTranslatef(3.0f, -1.8f, -1.0f);
     glScalef(2.5f, 2.2f, 2.5f);
     glRotatef(90, 1, 0, 0);
-    drawCylinder(0.15f, 0.4f, 32, 32);
+    glBindTexture(GL_TEXTURE_2D, (*texture_ids)["textures/metal.jpg"]);
+    drawTexturedCylinder(0.15f, 0.4f, 32, 32);
+    glBindTexture(GL_TEXTURE_2D, 0);
 
     glColor3f(0.0f, 0.0f, 0.0f);
-    glTranslatef(0.0f, 0.2f, 0.0f);
     glPushMatrix();
     GLUquadric* quadric = gluNewQuadric();
     gluDisk(quadric, 0.0, 0.15, 32, 1);

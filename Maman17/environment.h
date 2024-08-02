@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "obb.h"
+#include "texture_loader.h"
 
 class Environment {
 public:

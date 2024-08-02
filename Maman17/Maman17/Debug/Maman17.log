@@ -1,0 +1,8 @@
+﻿  main.cpp
+M:\Users\netan\Desktop\Maman17\main.cpp(129,34): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+M:\Users\netan\Desktop\Maman17\main.cpp(255,17): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+M:\Users\netan\Desktop\Maman17\main.cpp(282,34): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+M:\Users\netan\Desktop\Maman17\main.cpp(286,21): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  Maman17.vcxproj -> M:\Users\netan\Desktop\Maman17\Debug\Maman17.exe
+  'pwsh.exe' is not recognized as an internal or external command,
+  operable program or batch file.
