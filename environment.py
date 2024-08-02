@@ -1,8 +1,6 @@
-from OpenGL.GL import *
-from OpenGL.GLUT import *
-from OpenGL.GLU import *
+import utils
+from utils import *
 from obb import OBB
-import numpy as np
 
 size = 2
 rows = 20
@@ -12,13 +10,10 @@ wall_height = 8.0
 
 def draw_checkerboard():
     glPushMatrix()
-    glNormal3f(0, 1, 0) 
-
+    glNormal3f(0, 1, 0)
     glTranslatef(-(rows / 2) - 2, -2.75, -(columns / 2) - 7)
-
     specular = [1.0, 1.0, 1.0, 1.0]
     shininess = 128.0
-
     glMaterialfv(GL_FRONT, GL_SPECULAR, specular)
     glMaterialf(GL_FRONT, GL_SHININESS, shininess)
     glBegin(GL_QUADS)
@@ -42,40 +37,60 @@ def draw_walls():
     glTranslatef(-(rows / 2) - 2, -2.75, -(columns / 2) - 7)
 
     glColor3f(0.6, 0.6, 0.6)  # Wall color
+    glBindTexture(GL_TEXTURE_2D, utils.texture_ids["textures/walls.jpg"])
+
+    glColor3f(1.0, 1.0, 1.0)  # Use white to maintain the texture's color
 
     # Left wall
     glBegin(GL_QUADS)
+    glTexCoord2f(0.0, 0.0)
     glVertex3f(0, 0, 0)
+    glTexCoord2f(0.0, 1.0)
     glVertex3f(0, wall_height, 0)
-    glVertex3f(0, wall_height, columns * size)
+    glTexCoord2f(1.0, 1.0)
+    glVertex3f(0, wall_height, columns * size)  # Top-right corner of the quad
+    glTexCoord2f(1.0, 0.0)
     glVertex3f(0, 0, columns * size)
     glEnd()
 
     # Right wall
     glBegin(GL_QUADS)
+    glTexCoord2f(0.0, 0.0)
     glVertex3f(rows * size, 0, 0)
+    glTexCoord2f(0.0, 1.0)
     glVertex3f(rows * size, wall_height, 0)
+    glTexCoord2f(1.0, 1.0)
     glVertex3f(rows * size, wall_height, columns * size)
+    glTexCoord2f(1.0, 0.0)
     glVertex3f(rows * size, 0, columns * size)
     glEnd()
 
     # Front wall
     glBegin(GL_QUADS)
+    glTexCoord2f(0.0, 0.0)
     glVertex3f(0, 0, 0)
+    glTexCoord2f(0.0, 1.0)
     glVertex3f(0, wall_height, 0)
+    glTexCoord2f(1.0, 1.0)
     glVertex3f(rows * size, wall_height, 0)
+    glTexCoord2f(1.0, 0.0)
     glVertex3f(rows * size, 0, 0)
     glEnd()
 
     # Back wall
     glBegin(GL_QUADS)
+    glTexCoord2f(0.0, 0.0)
     glVertex3f(0, 0, columns * size)
+    glTexCoord2f(0.0, 1.0)
     glVertex3f(0, wall_height, columns * size)
+    glTexCoord2f(1.0, 1.0)
     glVertex3f(rows * size, wall_height, columns * size)
+    glTexCoord2f(1.0, 0.0)
     glVertex3f(rows * size, 0, columns * size)
     glEnd()
-
-    glPopMatrix() 
+    glBindTexture(GL_TEXTURE_2D, 0)
+    glPopMatrix()
+    glBindTexture(GL_TEXTURE_2D, 0)
 
 def draw_wall_obbs():
     wall_obbs = []

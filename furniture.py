@@ -1,18 +1,6 @@
-from OpenGL.GL import *
-from OpenGL.GLUT import *
-from OpenGL.GLU import *
+import utils
 from obb import OBB
-import numpy as np
-
-def draw_cylinder(radius, height, slices, stacks):
-    """ Draw a cylinder """
-    glPushMatrix()
-    glTranslatef(0, height / 2, 0)
-    quadric = gluNewQuadric()
-    gluCylinder(gluNewQuadric(), radius, radius, height, slices, stacks)
-    gluDeleteQuadric(quadric)
-    glPopMatrix()
-
+from utils import *
 
 def draw_table():
     # Table dimensions
@@ -28,17 +16,19 @@ def draw_table():
     glTranslatef(4, -1.2, -0.5)
 
 
-    # draw the table base
+    glColor3f(1.0, 1.0, 1.0)  # Use white to maintain the texture's color
+    glBindTexture(GL_TEXTURE_2D, utils.texture_ids["textures/wood.png"])
+    # draw table top
     glPushMatrix()
-    glColor3f(0.65, 0.32, 0.17)  # Brown color
     glScalef(top_width, top_height, top_depth)
-    glutSolidCube(1)
+    draw_cube(1.0)
     glPopMatrix()
 
     # Draw table legs
     glPushMatrix()
     glTranslatef(0,0, top_height)
     glRotatef(90, 1, 0, 0)
+    glTranslatef(0, leg_height / 2, 0)
 
     # first leg
     glPushMatrix()
@@ -67,15 +57,15 @@ def draw_table():
     glPopMatrix()
 
     glPopMatrix()
-
+    glBindTexture(GL_TEXTURE_2D, 0)
 
 def draw_tresh_can():
     glPushMatrix()
 
-    ambient = [0.1, 0.1, 0.1, 1.0]  # Low ambient reflection
-    diffuse = [0.4, 0.4, 0.4, 1.0]  # Moderate diffuse reflection
-    specular = [1, 1, 1, 1.0]  # High specular reflection
-    shininess = 128.0  # High shininess for sharp highlights
+    ambient = [0.1, 0.1, 0.1, 1.0]
+    diffuse = [0.4, 0.4, 0.4, 1.0]
+    specular = [1, 1, 1, 1.0]
+    shininess = 128.0
 
     glMaterialfv(GL_FRONT, GL_AMBIENT, ambient)
     glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse)
@@ -84,17 +74,19 @@ def draw_tresh_can():
     glColor3f(0.5, 0.5, 0.5)
 
     glTranslatef(3, -1.8, -1)
-    glScalef(2.5, 2.2, 2.5)
-    glRotatef(90, 1, 0, 0)
-    draw_cylinder(0.15, 0.4, 32,32)
 
+    glScalef(2.5, 2.4, 2.5)
+    glRotatef(90, 1, 0, 0)
+
+    glColor3f(1.0, 1.0, 1.0)  # Use white to maintain the texture's color
+    glBindTexture(GL_TEXTURE_2D, utils.texture_ids["textures/metal.jpg"])
+    draw_cylinder(0.15, 0.4, 32,32)
+    glBindTexture(GL_TEXTURE_2D, 0)
     glColor3f(0, 0, 0)
-    glTranslatef(0, 0.2, 0)
+
     # Draws a circle
     glPushMatrix()
-    quadric = gluNewQuadric()
     gluDisk(gluNewQuadric(), 0, 0.15, 32, 1)
-    gluDeleteQuadric(quadric)
     glPopMatrix()
 
     glPopMatrix()
