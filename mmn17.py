@@ -9,6 +9,7 @@ import robot
 from robot import *
 from environment import *
 from furniture import *
+from utils import *
 
 window_width = 1280
 window_height = 860
@@ -19,11 +20,11 @@ camera_angle_y = 0.0
 camera_distance = 12
 # light default variables
 ambient_factor = 0.4
-lamp_intensity = 1
-lamp_position =[4, 5, -1]
-lamp_direction = [4, 0, -1]
+lamp_intensity = 0.6
+lamp_position =[1, 3, 1]
+lamp_direction = [1, 0, 1]
 # scene flags
-move_flag = False
+move_flag = -1
 robot_view = False
 lamp_flag = False
 lamp_dir_flag = False
@@ -38,7 +39,7 @@ def clean_flags():
     lamp_flag = False
     lamp_dir_flag = False
     lamp_int_flag = False
-    move_flag = False
+    move_flag = -1
 def myDisplay():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)  # Clear the color buffer and the depth buffer
     glLoadIdentity()
@@ -82,7 +83,6 @@ def myReshape(width, height):
     if height == 0:
         height = 1  # Prevent divide by zero
     aspect = width / height
-
     glViewport(0, 0, width, height)
 
     glMatrixMode(GL_PROJECTION)  # To operate on the Projection matrix
@@ -91,7 +91,6 @@ def myReshape(width, height):
 
     glMatrixMode(GL_MODELVIEW)  # To operate on the model-view matrix
     glLoadIdentity()  # Reset the model-view matrix
-
 
 def lighting():
     glEnable(GL_LIGHTING)  # Enable lighting
@@ -106,14 +105,12 @@ def lighting():
     direction = [lamp_direction[0] - lamp_position[0],lamp_direction[1] - lamp_position[1], lamp_direction[2] - lamp_position[2]]
     cutoff = 90
     exponent = 0
-
     glLightfv(GL_LIGHT1, GL_POSITION, lamp_light_position)
     glLightfv(GL_LIGHT1, GL_DIFFUSE, lamp_light_intesity)
     glLightfv(GL_LIGHT1, GL_SPECULAR, lamp_light_intesity)
     glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, direction)
     glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, cutoff)
     glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, exponent)
-
 
 def key_pressed(key, x, y):
     global camera_angle_x, camera_angle_y, camera_distance, ambient_factor, lamp_position,lamp_direction, lamp_intensity
@@ -123,48 +120,47 @@ def key_pressed(key, x, y):
     
     # Adjust camera angles and distance based on arrow key pressed
     if key == GLUT_KEY_UP:
-        if lamp_flag or lamp_dir_flag:
+        if move_flag == 9:
+            if ambient_factor <= 1:
+                ambient_factor += 0.05
+        elif move_flag == 0:
+            camera_angle_x += 5.0
+        elif lamp_flag or lamp_dir_flag:
             if lamp_flag:
                 lamp_position[1] += 0.5
             lamp_direction[1] += 0.5
         elif lamp_int_flag:
             lamp_intensity += 0.05
-        elif move_flag == 9:
-            if ambient_factor <= 1:
-                ambient_factor += 0.05
-        elif move_flag == 0:
-            camera_angle_x += 5.0
     elif key == GLUT_KEY_DOWN:
-        if lamp_flag or lamp_dir_flag:
+        if move_flag == 9:
+            if ambient_factor >= 0:
+                ambient_factor -= 0.05
+        elif move_flag == 0:
+            camera_angle_x -= 5.0
+        elif lamp_flag or lamp_dir_flag:
             if lamp_flag:
                 lamp_position[1] -= 0.5
             lamp_direction[1] -= 0.5
         elif lamp_int_flag:
             lamp_intensity -= 0.05
-        elif move_flag == 9:
-            if ambient_factor >= 0:
-                ambient_factor -= 0.05
-        elif move_flag == 0:
-            camera_angle_x -= 5.0
     elif key == GLUT_KEY_LEFT:
-        if lamp_flag or lamp_dir_flag:
-            if lamp_flag:
-                lamp_position[0] -= 0.5
-            lamp_direction[0] -= 0.5
-        elif move_flag == 0:
+        if move_flag == 0:
             camera_angle_y -= 5.0
         elif move_flag == 1:
             robot.head_angle -= 5.0
-    elif key == GLUT_KEY_RIGHT:
-        if lamp_flag or lamp_dir_flag:
+        elif lamp_flag or lamp_dir_flag:
             if lamp_flag:
-                lamp_position[0] += 0.5
-            lamp_direction[0] += 0.5
-        elif move_flag == 0:
+                lamp_position[0] -= 0.5
+            lamp_direction[0] -= 0.5
+    elif key == GLUT_KEY_RIGHT:
+        if move_flag == 0:
             camera_angle_y += 5.0
         elif move_flag == 1:
             robot.head_angle += 5.0
-    
+        elif lamp_flag or lamp_dir_flag:
+            if lamp_flag:
+                lamp_position[0] += 0.5
+            lamp_direction[0] += 0.5
     # Clamp camera angle within reasonable limits
     camera_angle_x = max(-10.0, min(90.0, camera_angle_x))
     camera_angle_y %= 360.0
@@ -285,8 +281,10 @@ def main():
     glutCreateWindow("MMN 17")
     glEnable(GL_DEPTH_TEST)
     glDepthFunc(GL_LEQUAL)
+    glEnable(GL_TEXTURE_2D)
     glShadeModel(GL_SMOOTH)
     glEnable(GL_NORMALIZE)
+
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
     
     # Enable general antialiasing
@@ -295,6 +293,7 @@ def main():
     glEnable(GL_POLYGON_SMOOTH)
     glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST)
 
+    initialize_textures()
     glutDisplayFunc(myDisplay)
     glutSpecialFunc(key_pressed)
     glutKeyboardFunc(update_move)
